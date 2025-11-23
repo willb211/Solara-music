@@ -1,0 +1,7 @@
+{
+  "name": "your-site-name", // 自定义站点名称（如 my-static-site）
+  "compatibility_date": "2025-11-23",
+  "assets": {
+    "directory": "./dist" // 前端打包后的目录（Vue/React 通常是 dist，Next.js 可能是 out）
+  }
+}
