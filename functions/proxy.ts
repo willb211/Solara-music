@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://music-api.gdstudio.xyz/api.php";
+const API_BASE_URL = "https://api.injahow.cn/meting/";
 const KUWO_HOST_PATTERN = /(^|\.)kuwo\.cn$/i;
 const SAFE_RESPONSE_HEADERS = ["content-type", "cache-control", "accept-ranges", "content-length", "content-range", "etag", "last-modified", "expires"];
 
@@ -85,15 +85,49 @@ async function proxyKuwoAudio(targetUrl: string, request: Request): Promise<Resp
 
 async function proxyApiRequest(url: URL, request: Request): Promise<Response> {
   const apiUrl = new URL(API_BASE_URL);
-  url.searchParams.forEach((value, key) => {
-    if (key === "target" || key === "callback") {
-      return;
-    }
-    apiUrl.searchParams.set(key, value);
-  });
 
-  if (!apiUrl.searchParams.has("types")) {
-    return new Response("Missing types", { status: 400 });
+  // Map original API parameters to Meting API parameters
+  const types = url.searchParams.get("types");
+  const name = url.searchParams.get("name");
+  const source = url.searchParams.get("source") || "netease";
+  const count = url.searchParams.get("count") || "30";
+  const pages = url.searchParams.get("pages") || "1";
+  const id = url.searchParams.get("id");
+  const br = url.searchParams.get("br");
+
+  // Set default server for Meting API
+  apiUrl.searchParams.set("server", source === "tencent" ? "tencent" : "netease");
+
+  // Map API types to Meting API types
+  if (types === "search") {
+    if (name) {
+      apiUrl.searchParams.set("type", "name");
+      apiUrl.searchParams.set("name", name);
+      apiUrl.searchParams.set("limit", count);
+      apiUrl.searchParams.set("page", pages);
+    } else {
+      return new Response("Missing search name", { status: 400 });
+    }
+  } else if (types === "url") {
+    apiUrl.searchParams.set("type", "url");
+    if (!id) {
+      return new Response("Missing song id", { status: 400 });
+    }
+    apiUrl.searchParams.set("id", id);
+  } else if (types === "lyric") {
+    apiUrl.searchParams.set("type", "lrc");
+    if (!id) {
+      return new Response("Missing song id", { status: 400 });
+    }
+    apiUrl.searchParams.set("id", id);
+  } else if (types === "pic") {
+    apiUrl.searchParams.set("type", "pic");
+    if (!id) {
+      return new Response("Missing song id", { status: 400 });
+    }
+    apiUrl.searchParams.set("id", id);
+  } else {
+    return new Response("Unsupported API type", { status: 400 });
   }
 
   const upstream = await fetch(apiUrl.toString(), {
