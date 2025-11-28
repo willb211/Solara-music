@@ -1,4 +1,4 @@
-const PUBLIC_PATH_PATTERNS = [/^\/login(?:\/|$)/, /^\/api\/login(?:\/|$)/];
+const PUBLIC_PATH_PATTERNS = [/^\/login(?:\/|$)/, /^\/api\/login(?:\/|$)/, /^\/proxy(?:\/|$)/];
 const PUBLIC_FILE_EXTENSIONS = new Set([
   ".css",
   ".js",
@@ -48,7 +48,7 @@ export async function onRequest(context: any) {
 
   const cookieHeader = request.headers.get("Cookie") || "";
   const cookies: Record<string, string> = {};
-  cookieHeader.split(";").forEach((part) => {
+  cookieHeader.split(";").forEach((part: string) => {
     const separatorIndex = part.indexOf("=");
     if (separatorIndex === -1) {
       return;
